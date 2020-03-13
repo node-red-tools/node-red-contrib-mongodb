@@ -4,6 +4,10 @@
             return typeof v === 'string';
         }
 
+        function isNumber(v) {
+            return typeof v === 'number';
+        }
+
         RED.nodes.registerType('mongodb-config', {
             category: 'config',
             defaults: {
@@ -12,11 +16,12 @@
                     required: true,
                     validate: isString,
                 },
-                url: {
+                host: {
                     value: null,
                     required: true,
                     validate: isString,
                 },
+                port: {},
                 database: {
                     value: null,
                     required: true,
@@ -27,7 +32,7 @@
                 username: { type: 'text' },
                 password: { type: 'password' },
             },
-            icon: 'icon.png',
+            icon: 'mongodb.png',
             inputs: 0,
             outputs: 1,
             color: '#13aa52',
@@ -41,8 +46,12 @@
 
 <script type="text/x-red" data-template-name="mongodb-config">
     <div class="form-row">
-        <label for="node-config-input-url"><i class="fa fa-link"></i> URL: </label>
-        <input type="text" id="node-config-input-url" />
+        <label for="node-config-input-host"><i class="fa fa-link"></i> Host: </label>
+        <input type="text" id="node-config-input-host" />
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-port"><i class="fa fa-list-ol"></i> Port: </label>
+        <input type="text" id="node-config-input-port" />
     </div>
     <div class="form-row">
         <label for="node-config-input-database"><i class="fa fa-database"></i> Database: </label>

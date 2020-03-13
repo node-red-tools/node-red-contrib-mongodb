@@ -35,7 +35,7 @@
                     value: '',
                 },
             },
-            icon: 'icon.png',
+            icon: 'mongodb.png',
             inputs: 1,
             outputs: 1,
             color: '#13aa52',
@@ -43,7 +43,7 @@
                 return this.name || 'MongoDB Collection';
             },
             oneditprepare: function() {
-                const $method = $('node-input-method');
+                const $method = $('#node-input-method');
                 const loadMethods = configId => {
                     return toNativePomise(
                         $.getJSON('mongodb/collection/methods'),
@@ -52,9 +52,11 @@
                 const renderMethods = methods => {
                     $method.empty();
 
-                    const currentMethod = this.operation;
+                    const currentMethod = this.method;
 
-                    $.each(methods, method => {
+                    $method.append(`<option value="">--Select method--</option>`);
+
+                    $.each(methods, (_, method) => {
                         const selected =
                             method === currentMethod ? 'selected' : '';
 
@@ -103,6 +105,10 @@
 </script>
 
 <script type="text/x-red" data-template-name="mongodb-collection">
+    <div class="form-row">
+        <label for="node-input-config"><i class="fa fa-tasks"></i> <span>Connection:</span></label>
+        <select id="node-input-config"></select>
+    </div>
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> Name: </label>
         <input type="text" id="node-input-name" />

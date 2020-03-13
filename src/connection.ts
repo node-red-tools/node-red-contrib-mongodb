@@ -7,38 +7,43 @@ const POOL = {} as {
 };
 
 export interface Settings {
-    url: string;
+    host: string;
+    port?: number;
     database: string;
     username?: string;
     password?: string;
 }
 
-function normalizeUrl(url: string): string {
-    let normalized = url;
+function normalizeHost(host: string): string {
+    let normalized = host;
 
-    if (url.startsWith(SCHEMA)) {
-        normalized = url.substr(SCHEMA.length);
+    if (host.startsWith(SCHEMA)) {
+        normalized = host.substr(SCHEMA.length);
     }
 
-    if (url.endsWith('/')) {
-        normalized = url.substring(0, url.length - 1);
+    if (host.endsWith('/')) {
+        normalized = host.substring(0, host.length - 1);
     }
 
     return normalized;
 }
 
-function conntectionString(settings: Settings): string {
-    let fullUrl = normalizeUrl(settings.url);
+function connectionString(settings: Settings): string {
+    let fullUrl = normalizeHost(settings.host);
 
     if (settings.username && settings.password) {
         fullUrl = `${settings.username}:${settings.password}@${fullUrl}`;
+    }
+
+    if (settings.port) {
+        fullUrl = `${fullUrl}:${settings.port}`;
     }
 
     return `${SCHEMA}${fullUrl}`;
 }
 
 export async function open(settings: Settings): Promise<Db> {
-    const uri = conntectionString(settings);
+    const uri = connectionString(settings);
     let conn = POOL[uri];
 
     if (!conn) {
@@ -53,7 +58,7 @@ export async function open(settings: Settings): Promise<Db> {
 }
 
 export async function close(settings: Settings): Promise<void> {
-    const uri = conntectionString(settings);
+    const uri = connectionString(settings);
     const conn = POOL[uri];
 
     if (!conn) {

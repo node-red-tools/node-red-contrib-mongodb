@@ -17,7 +17,8 @@ module.exports = function register(RED: Red): void {
         RED.nodes.createNode(this, props);
 
         this.settings = Object.freeze({
-            url: props.url,
+            host: props.host,
+            port: props.port,
             database: props.database,
             username: props.username,
             password: props.password,
