@@ -1,0 +1,75 @@
+<script type="text/javascript">
+    (function() {
+        function isString(v) {
+            return typeof v === 'string';
+        }
+
+        RED.nodes.registerType('mongodb-config', {
+            category: 'config',
+            defaults: {
+                name: {
+                    value: 'MongoDB',
+                    required: true,
+                    validate: isString,
+                },
+                url: {
+                    value: null,
+                    required: true,
+                    validate: isString,
+                },
+                database: {
+                    value: null,
+                    required: true,
+                    validate: isString,
+                },
+            },
+            credentials: {
+                username: { type: 'text' },
+                password: { type: 'password' },
+            },
+            icon: 'icon.png',
+            inputs: 0,
+            outputs: 1,
+            color: '#13aa52',
+            label: function() {
+                return this.name || 'MongoDB';
+            },
+            oneditprepare: function() {},
+        });
+    })();
+</script>
+
+<script type="text/x-red" data-template-name="mongodb-config">
+    <div class="form-row">
+        <label for="node-config-input-url"><i class="fa fa-link"></i> URL: </label>
+        <input type="text" id="node-config-input-url" />
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-database"><i class="fa fa-database"></i> Database: </label>
+        <input type="text" id="node-config-input-database" />
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-username"><i class="fa fa-user"></i> User: </label>
+        <input type="text" id="node-config-input-username" />
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-password"><i class="fa fa-key"></i> Password: </label>
+        <input type="password" id="node-config-input-password" />
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="fa fa-tag"></i> Name: </label>
+        <input type="text" id="node-config-input-name" />
+    </div>
+    <div class="form-tips"><b>Tip:</b> This is here to help.</div>
+</script>
+
+<script type="text/x-red" data-help-name="mongodb-config">
+    <p>Some useful help text to introduce the node.</p>
+    <h3>Outputs</h3>
+        <dl class="message-properties">
+        <dt>payload
+            <span class="property-type">string | buffer</span>
+        </dt>
+    <h3>Details</h3>
+    <p>Some more information about the node.</p>
+</script>

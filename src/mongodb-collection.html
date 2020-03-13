@@ -1,0 +1,130 @@
+<script type="text/javascript">
+    function isString(v) {
+        return typeof v === 'string';
+    }
+
+    function toNativePomise(jqPromise) {
+        return new Promise((resolve, reject) => {
+            jqPromise.then(resolve).catch(reject);
+        });
+    }
+
+    (function() {
+        function isString(v) {
+            return typeof v === 'string';
+        }
+
+        RED.nodes.registerType('mongodb-collection', {
+            category: 'database',
+            defaults: {
+                name: {
+                    value: 'MongoDB',
+                    required: true,
+                    validate: isString,
+                },
+                config: {
+                    value: '',
+                    required: true,
+                    type: 'mongodb-config',
+                },
+                collection: {
+                    value: '',
+                    validate: isString,
+                },
+                method: {
+                    value: '',
+                },
+            },
+            icon: 'icon.png',
+            inputs: 1,
+            outputs: 1,
+            color: '#13aa52',
+            label: function() {
+                return this.name || 'MongoDB Collection';
+            },
+            oneditprepare: function() {
+                const $method = $('node-input-method');
+                const loadMethods = configId => {
+                    return toNativePomise(
+                        $.getJSON('mongodb/collection/methods'),
+                    );
+                };
+                const renderMethods = methods => {
+                    $method.empty();
+
+                    const currentMethod = this.operation;
+
+                    $.each(methods, method => {
+                        const selected =
+                            method === currentMethod ? 'selected' : '';
+
+                        $method.append(
+                            `<option value="${method}" ${
+                                selected ? 'selected' : ''
+                            }>${method}</option>`,
+                        );
+                    });
+                };
+                const $tabs = RED.tabs.create({
+                    id: 'node-input-mongodb-collection',
+                    onchange: function(tab) {
+                        // $('#node-config-amqp-server-tabs-content')
+                        //     .children()
+                        //     .hide();
+                        // $('#' + tab.id).show();
+                        // if (tab.id === 'amqp-server-tab-topology') {
+                        //     functionDialogResize();
+                        // }
+                    },
+                });
+
+                $tabs.addTab({
+                    id: 'mongodb-collection-tab-options',
+                    label: 'Options',
+                });
+
+                $tabs.addTab({
+                    id: 'mongodb-collection-tab-autoCreate',
+                    label: 'Auto create',
+                });
+
+                loadMethods()
+                    .then(renderMethods)
+                    .catch(err => {
+                        alert(
+                            'Failed to retrieve list of MongoDB Collection methods',
+                        );
+
+                        console.error(err);
+                    });
+            },
+        });
+    })();
+</script>
+
+<script type="text/x-red" data-template-name="mongodb-collection">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name: </label>
+        <input type="text" id="node-input-name" />
+    </div>
+    <div class="form-row">
+        <label for="node-input-collection"><i class="fa fa-folder"></i> Collection: </label>
+        <input type="text" id="node-input-collection" />
+    </div>
+    <div class="form-row">
+        <label for="node-input-method"><i class="fa fa-tasks"></i> <span>Method:</span></label>
+        <select id="node-input-method"></select>
+    </div>
+    <div class="form-tips"><b>Tip:</b> This is here to help.</div>
+</script>
+
+<script type="text/x-red" data-help-name="mongodb-collection">
+    <p>Some useful help text to introduce the node.</p>
+    <h3>Outputs</h3>
+        <dl class="message-properties">
+        <dt>payload
+            <span class="property-type">string | buffer</span>
+        </dt>
+    <h3>Details</h3>
+    <p>Some more information about the node.</p>
+</script>
