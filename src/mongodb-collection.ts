@@ -30,6 +30,18 @@ interface Properties extends NodeProperties {
     prop: string;
 }
 
+function deserialize(input: any): any {
+    if (!input) {
+        return undefined;
+    }
+
+    if (typeof input === 'object') {
+        return input;
+    }
+
+    return JSON.parse(input);
+}
+
 module.exports = function register(RED: Red): void {
     RED.nodes.registerType('mongodb-collection', function mongodbCollection(
         this: CollectionNode,
@@ -71,7 +83,7 @@ module.exports = function register(RED: Red): void {
                 } else {
                     send(msg);
                 }
-            }
+            };
 
             try {
                 if (!config || !config.settings) {
@@ -81,8 +93,9 @@ module.exports = function register(RED: Red): void {
                 const msgMongo = msg.mongodb || {};
                 const collectionName =
                     msgMongo.collection || this.collection.name;
-                const collectionOpts =
-                    msgMongo.options || this.collection.options;
+                const collectionOpts = deserialize(
+                    msgMongo.options || this.collection.options,
+                );
                 const methodName = msgMongo.method || this.method;
 
                 if (!methodName) {
@@ -130,7 +143,7 @@ module.exports = function register(RED: Red): void {
 
                 sendToOutputs(undefined, msg);
             } catch (e) {
-                this.error("Failed to handle a message", e);
+                this.error('Failed to handle a message', e);
                 sendToOutputs(e, msg);
             } finally {
                 done();
