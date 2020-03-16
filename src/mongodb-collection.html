@@ -8,6 +8,10 @@
             return typeof v === 'number';
         }
 
+        function isBoolean(v) {
+            return typeof v === 'boolean';
+        }
+
         function toNativePomise(jqPromise) {
             return new Promise((resolve, reject) => {
                 jqPromise.then(resolve).catch(reject);
@@ -43,6 +47,14 @@
                     value: '',
                     validate: isString,
                 },
+                autoCreate: {
+                    value: false,
+                    validate: isBoolean,
+                },
+                autoCreateOptions: {
+                    value: '',
+                    validate: isString,
+                },
             },
             icon: 'mongodb.png',
             inputs: 1,
@@ -56,6 +68,7 @@
                 const $method = $('#node-input-method');
                 const $outputs = $('#node-input-outputs');
                 const $options = $('#node-input-options');
+                const $autoCreateOptions = $('#node-input-autoCreateOptions');
                 const loadMethods = configId => {
                     return toNativePomise(
                         $.getJSON('mongodb/collection/methods'),
@@ -91,6 +104,18 @@
                     $options.val($optsEditor.getSession().getValue());
                 });
 
+                const $autoCreateOptionsEditor = RED.editor.createEditor({
+                    id: 'node-input-autoCreateOptions-editor',
+                    mode: 'ace/mode/json',
+                    value: $autoCreateOptions.val(),
+                });
+
+                $autoCreateOptionsEditor.getSession().on('change', function() {
+                    $autoCreateOptions.val(
+                        $autoCreateOptionsEditor.getSession().getValue(),
+                    );
+                });
+
                 const $tabsContent = $(
                     '#node-input-mongodb-collection-tabs-content',
                 );
@@ -100,10 +125,6 @@
                         $tabsContent.children().hide();
 
                         $('#' + tab.id).show();
-
-                        // if (tab.id === 'amqp-server-tab-topology') {
-                        //     functionDialogResize();
-                        // }
                     },
                 });
 
@@ -115,6 +136,11 @@
                 $tabs.addTab({
                     id: 'node-input-mongodb-collection-tab-options',
                     label: 'Options',
+                });
+
+                $tabs.addTab({
+                    id: 'node-input-mongodb-collection-tab-creation',
+                    label: 'Creation',
                 });
 
                 setTimeout(function() {
@@ -197,6 +223,16 @@
             <div class="form-row node-text-editor-row">
                 <textarea id="node-input-options" style="display: none; resize: vertical; width:100%; height: 10em"></textarea>
                 <div style="height: 250px;" class="node-text-editor" id="node-input-options-editor" ></div>
+            </div>
+        </div>
+        <div id="node-input-mongodb-collection-tab-creation" style="display:none">
+            <div class="form-row ">
+                <input id="node-input-autoCreate" type="checkbox" />
+                <label for="node-input-autoCreate" style="width: 80%;"><i class="fa fa-folder-plus"></i> <span>Create collection if not exists using options below:</span></label>
+            </div>
+            <div class="form-row node-text-editor-row">
+                <textarea id="node-input-autoCreateOptions" style="display: none; resize: vertical; width:100%; height: 10em"></textarea>
+                <div style="height: 250px;" class="node-text-editor" id="node-input-autoCreateOptions-editor" ></div>
             </div>
         </div>
     </div>
