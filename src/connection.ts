@@ -52,9 +52,15 @@ export async function open(settings: Settings): Promise<Db> {
         POOL[uri] = conn;
     }
 
-    const client = await conn;
+    try {
+        const client = await conn;
 
-    return client.db(settings.database);
+        return client.db(settings.database);
+    } catch (e) {
+        delete POOL[uri];
+
+        throw e;
+    }
 }
 
 export async function close(settings: Settings): Promise<void> {

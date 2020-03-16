@@ -12,6 +12,7 @@ interface Collection {
 }
 
 export interface CollectionNode extends Node {
+    errorOutput: boolean;
     config: NodeId;
     collection: Collection;
     method: string;
@@ -19,11 +20,14 @@ export interface CollectionNode extends Node {
 }
 
 interface Properties extends NodeProperties {
+    outputs: number;
     config: NodeId;
     collection: string;
     options?: DbCollectionOptions;
     autoCreate?: boolean;
     autoCreateOptions?: CollectionCreateOptions;
+    method: string;
+    prop: string;
 }
 
 module.exports = function register(RED: Red): void {
@@ -33,6 +37,7 @@ module.exports = function register(RED: Red): void {
     ): void {
         RED.nodes.createNode(this, props);
 
+        this.errorOutput = props.outputs > 1;
         this.config = props.config;
         this.collection = {
             name: props.collection,
@@ -40,10 +45,34 @@ module.exports = function register(RED: Red): void {
             autoCreate: props.autoCreate,
             autoCreateOptions: props.autoCreateOptions,
         };
+        this.method = props.method;
 
         const config = RED.nodes.getNode(this.config) as ConfigNode;
 
         this.on('input', async (msg: any, send: Function, done: Function) => {
+            const sendToOutputs = (err?: Error, msg?: any) => {
+                // if error occured
+                if (err) {
+                    // if we need to send it to a dedicated output
+                    if (this.errorOutput) {
+                        msg.error = err;
+
+                        send([undefined, err]);
+                    } else {
+                        // otherwise just throw it
+                        throw err;
+                    }
+
+                    return;
+                }
+
+                if (this.errorOutput) {
+                    send([msg, undefined]);
+                } else {
+                    send(msg);
+                }
+            }
+
             try {
                 if (!config || !config.settings) {
                     throw new Error('Node is not configured');
@@ -99,13 +128,10 @@ module.exports = function register(RED: Red): void {
 
                 msg.payload = await method(collection, args);
 
-                send(msg);
+                sendToOutputs(undefined, msg);
             } catch (e) {
-                msg.error = e;
-
-                send(msg);
-
-                this.error(e.toString());
+                this.error("Failed to handle a message", e);
+                sendToOutputs(e, msg);
             } finally {
                 done();
             }

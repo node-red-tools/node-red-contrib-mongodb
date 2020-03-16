@@ -33,17 +33,23 @@
                 },
                 method: {
                     value: '',
+                    required: true,
                 },
+                outputs: {
+                    value: 1
+                }
             },
             icon: 'mongodb.png',
             inputs: 1,
             outputs: 1,
+            outputLabels: ["result"],
             color: '#13aa52',
             label: function() {
                 return this.name || 'MongoDB Collection';
             },
             oneditprepare: function() {
                 const $method = $('#node-input-method');
+                const $outputs = $('#node-input-outputs');
                 const loadMethods = configId => {
                     return toNativePomise(
                         $.getJSON('mongodb/collection/methods'),
@@ -54,7 +60,7 @@
 
                     const currentMethod = this.method;
 
-                    $method.append(`<option value="">--Select method--</option>`);
+                    $method.append(`<option value="">-- Select method --</option>`);
 
                     $.each(methods, (_, method) => {
                         const selected =
@@ -99,6 +105,14 @@
 
                         console.error(err);
                     });
+
+                $outputs.change((evt) => {
+                    if (evt.target.value > 1) {
+                        this.outputLabels = ["result", "error"];
+                    } else {
+                        this.outputLabels = ["result"];
+                    }
+                });
             },
         });
     })();
@@ -120,6 +134,14 @@
     <div class="form-row">
         <label for="node-input-method"><i class="fa fa-tasks"></i> <span>Method:</span></label>
         <select id="node-input-method"></select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-prop"><i class="fa fa-tasks"></i> <span>Query (msg.):</span></label>
+        <input type="text" id="node-input-prop" />
+    </div>
+    <div class="form-row">
+        <label for="node-input-outputs"><i class="fa fa-tasks"></i> <span>Outputs:</span></label>
+        <input type="number" min="1" max="2" id="node-input-outputs" />
     </div>
     <div class="form-tips"><b>Tip:</b> This is here to help.</div>
 </script>
