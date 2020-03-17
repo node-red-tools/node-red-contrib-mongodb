@@ -62,7 +62,7 @@
             outputLabels: ['result'],
             color: '#13aa52',
             label: function() {
-                return this.name || 'MongoDB Collection';
+                return this.name || this.method || 'MongoDB Collection';
             },
             oneditprepare: function() {
                 const $method = $('#node-input-method');
@@ -198,10 +198,6 @@
                 <select id="node-input-config"></select>
             </div>
             <div class="form-row">
-                <label for="node-input-name"><i class="fa fa-tag"></i> Name: </label>
-                <input type="text" id="node-input-name" />
-            </div>
-            <div class="form-row">
                 <label for="node-input-collection"><i class="fa fa-folder"></i> Collection: </label>
                 <input type="text" id="node-input-collection" />
             </div>
@@ -216,6 +212,10 @@
             <div class="form-row">
                 <label for="node-input-outputs"><i class="fa fa-random"></i> <span>Outputs:</span></label>
                 <input id="node-input-outputs" style="width: 60px;" />
+            </div>
+            <div class="form-row">
+                <label for="node-input-name"><i class="fa fa-tag"></i> Name: </label>
+                <input type="text" id="node-input-name" />
             </div>
             <div class="form-tips"><b>Tip:</b> This is here to help.</div>
         </div>
