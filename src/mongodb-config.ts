@@ -6,19 +6,30 @@ export interface ConfigNode extends Node {
     settings: ConnectionSettings;
 }
 
-interface Properties extends NodeProperties, ConnectionSettings {}
+type CollectionConfigOptionType =
+    | 'flow'
+    | 'global'
+    | 'json'
+    | 'jsonata'
+    | 'env';
 
-// function deserializeCollection(input: any): any {
-//     if (!input) {
-//         return undefined;
-//     }
+interface CollectionConfig {
+    name: string;
+    optionsType: CollectionConfigOptionType;
+    options: string;
+    autoCreate: boolean;
+    autoCreateOptionsType: CollectionConfigOptionType;
+    autoCreateOptions: string;
+}
 
-//     if (typeof input === 'object') {
-//         return input;
-//     }
-
-//     return JSON.parse(input);
-// }
+interface Properties extends NodeProperties {
+    host: string;
+    port?: number;
+    database: string;
+    username?: string;
+    password?: string;
+    collections: CollectionConfig[];
+}
 
 module.exports = function register(RED: Red): void {
     RED.nodes.registerType('mongodb-config', function mongodbConfig(
@@ -33,7 +44,24 @@ module.exports = function register(RED: Red): void {
             database: props.database,
             username: props.username,
             password: props.password,
-            collections: props.collections || [],
+            collections: (props.collections || []).map(config => {
+                return {
+                    name: config.name,
+                    autoCreate: config.autoCreate,
+                    options: RED.util.evaluateNodeProperty(
+                        config.options,
+                        config.optionsType,
+                        this,
+                        {},
+                    ),
+                    autoCreateOptions: RED.util.evaluateNodeProperty(
+                        config.autoCreateOptions,
+                        config.autoCreateOptionsType,
+                        this,
+                        {},
+                    ),
+                };
+            }),
         });
 
         this.on('close', (done: Function) => {

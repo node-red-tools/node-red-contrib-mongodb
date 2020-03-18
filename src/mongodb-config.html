@@ -85,8 +85,10 @@
                             if (!opt.name) {
                                 collection = {
                                     name: '',
+                                    optionsType: 'json',
                                     options: '{}',
                                     autoCreate: false,
+                                    autoCreateOptionsType: 'json',
                                     autoCreateOptions: '{}',
                                 };
                             }
@@ -166,9 +168,8 @@
                                 .appendTo($row1Col3)
                                 .typedInput({
                                     required: false,
-                                    default: 'json',
+                                    default: collection.optionsType || 'json',
                                     types: [
-                                        'msg',
                                         'flow',
                                         'global',
                                         'json',
@@ -206,9 +207,8 @@
                             })
                                 .appendTo($row2Col3)
                                 .typedInput({
-                                    default: 'json',
+                                    default: collection.optionsType || 'json',
                                     types: [
-                                        'msg',
                                         'flow',
                                         'global',
                                         'json',
@@ -256,24 +256,30 @@
 
                 $collections.each((i, el) => {
                     const $collection = $(el);
+                    const $options = $collection.find(
+                        '.node-input-collection-property-options',
+                    );
+                    const $autoCreateOptions = $collection.find(
+                        '.node-input-collection-property-autoCreateOptions',
+                    );
+
                     this.collections.push({
                         name: $collection
                             .find('.node-input-collection-property-name')
                             .val(),
-                        options: $collection
-                            .find('.node-input-collection-property-options')
-                            .typedInput('value'),
+                        optionsType: $options.typedInput('type') || 'json',
+                        options: $options.typedInput('value'),
                         autoCreate:
                             $collection
                                 .find(
                                     '.node-input-collection-property-autoCreate',
                                 )
                                 .prop('checked') === true,
-                        autoCreateOptions: $collection
-                            .find(
-                                '.node-input-collection-property-autoCreateOptions',
-                            )
-                            .typedInput('value'),
+                        autoCreateOptionsType:
+                            $autoCreateOptions.typedInput('type') || 'json',
+                        autoCreateOptions: $autoCreateOptions.typedInput(
+                            'value',
+                        ),
                     });
                 });
             },
