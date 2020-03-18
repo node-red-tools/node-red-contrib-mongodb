@@ -157,31 +157,31 @@
                             width: '100%',
                             'margin-bottom': '10px',
                         });
-                        // const $row = $('<div />')
-                        //     .css({
-                        //         width: '100%',
-                        //         'margin-bottom': '10px'
-                        //     })
-                        //     .appendTo($opt);
-                        // const $col1 = $('<div />')
-                        //     .css({
-                        //         width: '20%',
-                        //         display: 'inline-block',
-                        //     })
-                        //     .appendTo($row);
-                        // const $col2 = $('<div />')
-                        //     .css({
-                        //         width: '80%',
-                        //         display: 'inline-block',
-                        //     })
-                        //     .appendTo($row);
+                        const $row = $('<div />')
+                            .css({
+                                width: '100%',
+                                'margin-bottom': '10px',
+                            })
+                            .appendTo($opt);
+                        const $col1 = $('<div />')
+                            .css({
+                                width: '100px',
+                                display: 'inline-block',
+                            })
+                            .appendTo($row);
+                        const $col2 = $('<div />')
+                            .css({
+                                width: '70%',
+                                display: 'inline-block',
+                            })
+                            .appendTo($row);
 
                         const required = isArgRequired(argName);
                         const $title = $('<label />', {
                             class: 'node-input-methodSignature-arg-name',
                         })
                             .text(argName)
-                            .appendTo($opt);
+                            .appendTo($col1);
                         const $arg = $('<input/>', {
                             class: 'node-input-methodSignature-arg-value',
                             type: 'text',
@@ -190,7 +190,7 @@
                             },
                             value: current.value,
                         })
-                            .appendTo($opt)
+                            .appendTo($col2)
                             .typedInput({
                                 required: required,
                                 default: current.type,
