@@ -1,4 +1,4 @@
-import { Db, MongoClient } from 'mongodb';
+import { Db, MongoClient, MongoClientOptions } from 'mongodb';
 import { Collection, CollectionSettings } from './collection';
 
 export class Connection {
@@ -9,10 +9,17 @@ export class Connection {
     public static async open(
         uri: string,
         collections: CollectionSettings[],
+        options?: MongoClientOptions,
     ): Promise<Connection> {
-        const client = await MongoClient.connect(uri, {
-            useUnifiedTopology: true,
-        });
+        const client = await MongoClient.connect(
+            uri,
+            Object.assign(
+                {
+                    useUnifiedTopology: true,
+                },
+                options,
+            ),
+        );
         const db = client.db();
         const c = await Promise.all(
             collections.map(i => Collection.open(db, i)),

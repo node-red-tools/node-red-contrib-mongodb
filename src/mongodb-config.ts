@@ -28,46 +28,60 @@ interface Properties extends NodeProperties {
     database: string;
     username?: string;
     password?: string;
+    options?: string;
     collections: CollectionConfig[];
 }
 
 module.exports = function register(RED: Red): void {
-    RED.nodes.registerType('mongodb-config', function mongodbConfig(
-        this: ConfigNode,
-        props: Properties,
-    ): void {
-        RED.nodes.createNode(this, props);
+    RED.nodes.registerType(
+        'mongodb-config',
+        function mongodbConfig(this: ConfigNode, props: Properties): void {
+            RED.nodes.createNode(this, props);
 
-        this.settings = Object.freeze({
-            host: props.host,
-            port: props.port,
-            database: props.database,
-            username: props.username,
-            password: props.password,
-            collections: (props.collections || []).map(config => {
-                return {
-                    name: config.name,
-                    autoCreate: config.autoCreate,
-                    options: RED.util.evaluateNodeProperty(
-                        config.options,
-                        config.optionsType,
+            this.settings = Object.freeze({
+                host: props.host,
+                port: props.port,
+                database: props.database,
+                username: props.username,
+                password: props.password,
+                collections: (props.collections || []).map(config => {
+                    return {
+                        name: config.name,
+                        autoCreate: config.autoCreate,
+                        options: RED.util.evaluateNodeProperty(
+                            config.options,
+                            config.optionsType,
+                            this,
+                            {},
+                        ),
+                        autoCreateOptions: RED.util.evaluateNodeProperty(
+                            config.autoCreateOptions,
+                            config.autoCreateOptionsType,
+                            this,
+                            {},
+                        ),
+                    };
+                }),
+                options: RED.util.evaluateJSONataExpression(
+                    RED.util.prepareJSONataExpression(
+                        props.options || '{}',
                         this,
-                        {},
                     ),
-                    autoCreateOptions: RED.util.evaluateNodeProperty(
-                        config.autoCreateOptions,
-                        config.autoCreateOptionsType,
-                        this,
-                        {},
-                    ),
-                };
-            }),
-        });
+                    {},
+                ),
+            });
 
-        this.on('close', (done: Function) => {
-            close(this.settings).finally(() => done());
-        });
-    });
+            this.on('close', (done: Function) => {
+                close(this.settings).finally(() => done());
+            });
+        },
+        {
+            credentials: {
+                username: { type: 'text' },
+                password: { type: 'password' },
+            },
+        },
+    );
 
     if (RED.httpAdmin != null) {
         RED.httpAdmin.get(

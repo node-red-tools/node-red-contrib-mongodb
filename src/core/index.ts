@@ -14,7 +14,7 @@ export async function open(settings: ConnectionSettings): Promise<Connection> {
     let promise = POOL[uri];
 
     if (!promise) {
-        promise = Connection.open(uri, settings.collections);
+        promise = Connection.open(uri, settings.collections, settings.options);
 
         POOL[uri] = promise;
     }

@@ -1,3 +1,4 @@
+import { MongoClientOptions } from 'mongodb';
 import { CollectionSettings } from './collection';
 
 const SCHEMA = 'mongodb://';
@@ -8,6 +9,7 @@ export interface ConnectionSettings {
     database: string;
     username?: string;
     password?: string;
+    options?: MongoClientOptions;
     collections: CollectionSettings[];
 }
 
