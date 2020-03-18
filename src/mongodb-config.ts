@@ -1,13 +1,24 @@
 import { Request, Response } from 'express';
 import { Node, NodeProperties, Red } from 'node-red';
-import { Settings, close } from './connection';
-import { list } from './methods/collection';
+import { Collection, ConnectionSettings, close } from './core';
 
 export interface ConfigNode extends Node {
-    settings: Settings;
+    settings: ConnectionSettings;
 }
 
-interface Properties extends NodeProperties, Settings {}
+interface Properties extends NodeProperties, ConnectionSettings {}
+
+// function deserializeCollection(input: any): any {
+//     if (!input) {
+//         return undefined;
+//     }
+
+//     if (typeof input === 'object') {
+//         return input;
+//     }
+
+//     return JSON.parse(input);
+// }
 
 module.exports = function register(RED: Red): void {
     RED.nodes.registerType('mongodb-config', function mongodbConfig(
@@ -22,6 +33,7 @@ module.exports = function register(RED: Red): void {
             database: props.database,
             username: props.username,
             password: props.password,
+            collections: props.collections || [],
         });
 
         this.on('close', (done: Function) => {
@@ -33,7 +45,14 @@ module.exports = function register(RED: Red): void {
         RED.httpAdmin.get(
             '/mongodb/collection/methods',
             (_: Request, res: Response) => {
-                return res.json(list());
+                return res.json(Collection.methods());
+            },
+        );
+
+        RED.httpAdmin.get(
+            '/mongodb/collections/${config}',
+            (_: Request, res: Response) => {
+                return res.json(Collection.methods());
             },
         );
     }

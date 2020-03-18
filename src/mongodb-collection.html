@@ -43,18 +43,6 @@
                     value: 1,
                     validate: isNumber,
                 },
-                options: {
-                    value: '',
-                    validate: isString,
-                },
-                autoCreate: {
-                    value: false,
-                    validate: isBoolean,
-                },
-                autoCreateOptions: {
-                    value: '',
-                    validate: isString,
-                },
             },
             icon: 'mongodb.png',
             inputs: 1,
@@ -65,10 +53,9 @@
                 return this.name || this.method || 'MongoDB Collection';
             },
             oneditprepare: function() {
+                const $collection = $('#node-input-collection');
                 const $method = $('#node-input-method');
                 const $outputs = $('#node-input-outputs');
-                const $options = $('#node-input-options');
-                const $autoCreateOptions = $('#node-input-autoCreateOptions');
                 const loadMethods = configId => {
                     return toNativePomise(
                         $.getJSON('mongodb/collection/methods'),
@@ -94,58 +81,6 @@
                         );
                     });
                 };
-                const $optsEditor = RED.editor.createEditor({
-                    id: 'node-input-options-editor',
-                    mode: 'ace/mode/json',
-                    value: $options.val(),
-                });
-
-                $optsEditor.getSession().on('change', function() {
-                    $options.val($optsEditor.getSession().getValue());
-                });
-
-                const $autoCreateOptionsEditor = RED.editor.createEditor({
-                    id: 'node-input-autoCreateOptions-editor',
-                    mode: 'ace/mode/json',
-                    value: $autoCreateOptions.val(),
-                });
-
-                $autoCreateOptionsEditor.getSession().on('change', function() {
-                    $autoCreateOptions.val(
-                        $autoCreateOptionsEditor.getSession().getValue(),
-                    );
-                });
-
-                const $tabsContent = $(
-                    '#node-input-mongodb-collection-tabs-content',
-                );
-                const $tabs = RED.tabs.create({
-                    id: 'node-input-mongodb-collection-tabs',
-                    onchange: function(tab) {
-                        $tabsContent.children().hide();
-
-                        $('#' + tab.id).show();
-                    },
-                });
-
-                $tabs.addTab({
-                    id: 'node-input-mongodb-collection-tab-collection',
-                    label: 'Collection',
-                });
-
-                $tabs.addTab({
-                    id: 'node-input-mongodb-collection-tab-options',
-                    label: 'Options',
-                });
-
-                $tabs.addTab({
-                    id: 'node-input-mongodb-collection-tab-creation',
-                    label: 'Creation',
-                });
-
-                setTimeout(function() {
-                    $tabs.resize();
-                }, 0);
 
                 loadMethods()
                     .then(renderMethods)
@@ -189,53 +124,30 @@
 
 <script type="text/x-red" data-template-name="mongodb-collection">
     <div class="form-row">
-        <ul style="background: #fff; min-width: 600px; margin-bottom: 20px;" id="node-input-mongodb-collection-tabs"></ul>
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name: </label>
+        <input type="text" id="node-input-name" />
     </div>
-    <div id="node-input-mongodb-collection-tabs-content" style="min-height: 170px;">
-        <div id="node-input-mongodb-collection-tab-collection" style="display:none">
-            <div class="form-row">
-                <label for="node-input-config"><i class="fa fa-tasks"></i> <span>Connection:</span></label>
-                <select id="node-input-config"></select>
-            </div>
-            <div class="form-row">
-                <label for="node-input-collection"><i class="fa fa-folder"></i> Collection: </label>
-                <input type="text" id="node-input-collection" />
-            </div>
-            <div class="form-row">
-                <label for="node-input-method"><i class="fa fa-tasks"></i> <span>Method:</span></label>
-                <select id="node-input-method"></select>
-            </div>
-            <div class="form-row">
-                <label for="node-input-prop"><i class="fa fa-long-arrow-right"></i> <span>Query:</span></label>
-                <input type="text" id="node-input-prop" placeholder="msg.payload" />
-            </div>
-            <div class="form-row">
-                <label for="node-input-outputs"><i class="fa fa-random"></i> <span>Outputs:</span></label>
-                <input id="node-input-outputs" style="width: 60px;" />
-            </div>
-            <div class="form-row">
-                <label for="node-input-name"><i class="fa fa-tag"></i> Name: </label>
-                <input type="text" id="node-input-name" />
-            </div>
-            <div class="form-tips"><b>Tip:</b> This is here to help.</div>
-        </div>
-        <div id="node-input-mongodb-collection-tab-options" style="display:none">
-            <div class="form-row node-text-editor-row">
-                <textarea id="node-input-options" style="display: none; resize: vertical; width:100%; height: 10em"></textarea>
-                <div style="height: 250px;" class="node-text-editor" id="node-input-options-editor" ></div>
-            </div>
-        </div>
-        <div id="node-input-mongodb-collection-tab-creation" style="display:none">
-            <div class="form-row ">
-                <input id="node-input-autoCreate" type="checkbox" />
-                <label for="node-input-autoCreate" style="width: 80%;"><i class="fa fa-folder-plus"></i> <span>Create collection if not exists using options below:</span></label>
-            </div>
-            <div class="form-row node-text-editor-row">
-                <textarea id="node-input-autoCreateOptions" style="display: none; resize: vertical; width:100%; height: 10em"></textarea>
-                <div style="height: 250px;" class="node-text-editor" id="node-input-autoCreateOptions-editor" ></div>
-            </div>
-        </div>
+    <div class="form-row">
+        <label for="node-input-config"><i class="fa fa-tasks"></i> <span>Connection:</span></label>
+        <select id="node-input-config"></select>
     </div>
+    <div class="form-row">
+        <label for="node-input-collection"><i class="fa fa-folder"></i> Collection: </label>
+        <select id="node-input-collection" style="width: 70%;"></select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-method"><i class="fa fa-tasks"></i> <span>Method:</span></label>
+        <select id="node-input-method" style="width: 70%;"></select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-prop"><i class="fa fa-long-arrow-right"></i> <span>Query:</span></label>
+        <input type="text" id="node-input-prop" placeholder="msg.payload" />
+    </div>
+    <div class="form-row">
+        <label for="node-input-outputs"><i class="fa fa-random"></i> <span>Outputs:</span></label>
+        <input id="node-input-outputs" style="width: 50px;" />
+    </div>
+    <div class="form-tips"><b>Tip:</b> This is here to help.</div>
 </script>
 
 <script type="text/x-red" data-help-name="mongodb-collection">

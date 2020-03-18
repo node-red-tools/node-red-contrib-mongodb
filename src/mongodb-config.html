@@ -27,6 +27,9 @@
                     required: true,
                     validate: isString,
                 },
+                collections: {
+                    value: [],
+                },
             },
             credentials: {
                 username: { type: 'text' },
@@ -39,37 +42,285 @@
             label: function() {
                 return this.name || 'MongoDB';
             },
-            oneditprepare: function() {},
+            oneditprepare: function() {
+                const $tabsContent = $('#node-config-mongodb-tabs-content');
+                const $tabs = RED.tabs.create({
+                    id: 'node-config-mongodb-tabs',
+                    onchange: function(tab) {
+                        $tabsContent.children().hide();
+
+                        $('#' + tab.id).show();
+                    },
+                });
+
+                $tabs.addTab({
+                    id: 'node-config-mongodb-tab-connection',
+                    label: 'Connection',
+                });
+
+                $tabs.addTab({
+                    id: 'node-config-mongodb-tab-security',
+                    label: 'Security',
+                });
+
+                $tabs.addTab({
+                    id: 'node-config-mongodb-tab-collections',
+                    label: 'Collections',
+                });
+
+                setTimeout(function() {
+                    $tabs.resize();
+                }, 0);
+
+                const $collections = $(
+                    '#node-config-mongodb-collections-container',
+                );
+                $collections
+                    .css('min-height', '150px')
+                    .css('min-width', '450px')
+                    .editableList({
+                        addItem: function($container, i, opt) {
+                            let collection = opt;
+
+                            if (!opt.name) {
+                                collection = {
+                                    name: '',
+                                    options: '{}',
+                                    autoCreate: false,
+                                    autoCreateOptions: '{}',
+                                };
+                            }
+
+                            $container.css({
+                                overflow: 'hidden',
+                                whiteSpace: 'nowrap',
+                            });
+
+                            const $table = $('<table></table>', {
+                                css: {
+                                    width: '100%',
+                                },
+                            });
+                            const col1Css = {
+                                width: '200px',
+                                'padding-bottom': '20px',
+                            };
+                            const col2Css = {
+                                width: '60px',
+                                'padding-left': '15px',
+                                'padding-bottom': '20px',
+                            };
+                            const col3Css = {
+                                'padding-bottom': '20px',
+                            };
+                            const col3Css2 = {
+                                'padding-bottom': '5px',
+                            };
+
+                            const $body = $('<tbody></tbody>').appendTo($table);
+                            const $row1 = $('<tr></tr>').appendTo($body);
+                            const $row1Col1 = $('<td></td>', {
+                                css: col1Css,
+                            }).appendTo($row1);
+                            const $row1Col2 = $('<td></td>', {
+                                css: col2Css,
+                            }).appendTo($row1);
+                            const $row1Col3 = $('<td></td>', {
+                                css: col3Css,
+                            }).appendTo($row1);
+                            const $row2 = $('<tr></tr>').appendTo($body);
+                            const $row2Col1 = $('<td></td>', {
+                                css: col1Css,
+                            }).appendTo($row2);
+                            const $row2Col2 = $('<td></td>', {
+                                css: col2Css,
+                            }).appendTo($row2);
+                            const $row2Col3 = $('<td></td>', {
+                                css: col3Css2,
+                            }).appendTo($row2);
+
+                            const $collectionName = $('<input/>', {
+                                class: 'node-input-collection-property-name',
+                                type: 'text',
+                                css: {
+                                    width: '100%',
+                                },
+                                placeholder: 'Name',
+                            }).appendTo($row1Col1);
+
+                            const optionsCss = {
+                                display: 'inline-block',
+                            };
+
+                            $('<span>Options:</span>')
+                                .css(optionsCss)
+                                .appendTo($row1Col2);
+
+                            const $collectionOptions = $('<input/>', {
+                                class: 'node-input-collection-property-options',
+                                type: 'text',
+                                css: {
+                                    width: '100%',
+                                },
+                            })
+                                .appendTo($row1Col3)
+                                .typedInput({
+                                    required: false,
+                                    default: 'json',
+                                    types: [
+                                        'msg',
+                                        'flow',
+                                        'global',
+                                        'json',
+                                        'jsonata',
+                                        'env',
+                                    ],
+                                });
+
+                            const collectionAutoCreateId = `node-input-collection-property-autoCreate-${i}`;
+                            const $collectionAutoCreate = $('<input />', {
+                                class:
+                                    'node-input-collection-property-autoCreate',
+                                type: 'checkbox',
+                                css: {
+                                    width: '30px',
+                                },
+                                id: collectionAutoCreateId,
+                            }).appendTo($row2Col1);
+
+                            $('<label>Create if not exists</label>', {})
+                                .attr('for', collectionAutoCreateId)
+                                .appendTo($row2Col1);
+
+                            $('<span>Options:</span>')
+                                .css(optionsCss)
+                                .appendTo($row2Col2);
+
+                            const $collectionAutoCreateOptions = $('<input/>', {
+                                class:
+                                    'node-input-collection-property-autoCreateOptions',
+                                type: 'text',
+                                css: {
+                                    width: '100%',
+                                },
+                            })
+                                .appendTo($row2Col3)
+                                .typedInput({
+                                    default: 'json',
+                                    types: [
+                                        'msg',
+                                        'flow',
+                                        'global',
+                                        'json',
+                                        'jsonata',
+                                        'env',
+                                    ],
+                                });
+
+                            $table.appendTo($container);
+
+                            $collectionName.val(collection.name);
+                            $collectionAutoCreate.attr(
+                                'checked',
+                                collection.autoCreate,
+                            );
+                            $collectionOptions.typedInput(
+                                'value',
+                                collection.options,
+                            );
+                            $collectionAutoCreateOptions.typedInput(
+                                'value',
+                                collection.autoCreateOptions,
+                            );
+
+                            $collectionAutoCreate.change(evt => {
+                                $collectionAutoCreateOptions.prop(
+                                    'disabled',
+                                    !evt.target.checked,
+                                );
+                            });
+                        },
+                        removable: true,
+                        sortable: false,
+                    });
+
+                (this.collections || []).forEach(i => {
+                    $collections.editableList('addItem', i);
+                });
+            },
+            oneditsave: function() {
+                const $collections = $(
+                    '#node-config-mongodb-collections-container',
+                ).editableList('items');
+                this.collections = [];
+
+                $collections.each((i, el) => {
+                    const $collection = $(el);
+                    this.collections.push({
+                        name: $collection
+                            .find('.node-input-collection-property-name')
+                            .val(),
+                        options: $collection
+                            .find('.node-input-collection-property-options')
+                            .typedInput('value'),
+                        autoCreate:
+                            $collection
+                                .find(
+                                    '.node-input-collection-property-autoCreate',
+                                )
+                                .prop('checked') === true,
+                        autoCreateOptions: $collection
+                            .find(
+                                '.node-input-collection-property-autoCreateOptions',
+                            )
+                            .typedInput('value'),
+                    });
+                });
+            },
         });
     })();
 </script>
 
 <script type="text/x-red" data-template-name="mongodb-config">
     <div class="form-row">
-        <label for="node-config-input-host"><i class="fa fa-link"></i> Host: </label>
-        <input type="text" id="node-config-input-host" />
+        <ul style="background: #fff; min-width: 600px; margin-bottom: 20px;" id="node-config-mongodb-tabs"></ul>
     </div>
-    <div class="form-row">
-        <label for="node-config-input-port"><i class="fa fa-list-ol"></i> Port: </label>
-        <input type="text" id="node-config-input-port" />
+    <div id="node-config-mongodb-tabs-content" style="min-height: 170px;">
+        <div id="node-config-mongodb-tab-connection" style="display:none">
+            <div class="form-row">
+                <label for="node-config-input-name"><i class="fa fa-tag"></i> Name: </label>
+                <input type="text" id="node-config-input-name" />
+            </div>
+            <div class="form-row">
+                <label for="node-config-input-host"><i class="fa fa-link"></i> Host: </label>
+                <input type="text" id="node-config-input-host" />
+            </div>
+            <div class="form-row">
+                <label for="node-config-input-database"><i class="fa fa-database"></i> Database: </label>
+                <input type="text" id="node-config-input-database" />
+            </div>
+            <div class="form-row">
+                <label for="node-config-input-port"><i class="fa fa-list-ol"></i> Port: </label>
+                <input type="text" id="node-config-input-port" />
+            </div>
+            <div class="form-tips"><b>Tip:</b> This is here to help.</div>
+        </div>
+        <div id="node-config-mongodb-tab-security" style="display:none">
+            <div class="form-row">
+                <label for="node-config-input-username"><i class="fa fa-user"></i> User: </label>
+                <input type="text" id="node-config-input-username" />
+            </div>
+            <div class="form-row">
+                <label for="node-config-input-password"><i class="fa fa-key"></i> Password: </label>
+                <input type="password" id="node-config-input-password" />
+            </div>
+        </div>
+        <div id="node-config-mongodb-tab-collections" style="display:none">
+            <div class="form-row node-config-mongodb-collections-row">
+                <ol id="node-config-mongodb-collections-container"></ol>
+            </div>
+        </div>
     </div>
-    <div class="form-row">
-        <label for="node-config-input-database"><i class="fa fa-database"></i> Database: </label>
-        <input type="text" id="node-config-input-database" />
-    </div>
-    <div class="form-row">
-        <label for="node-config-input-username"><i class="fa fa-user"></i> User: </label>
-        <input type="text" id="node-config-input-username" />
-    </div>
-    <div class="form-row">
-        <label for="node-config-input-password"><i class="fa fa-key"></i> Password: </label>
-        <input type="password" id="node-config-input-password" />
-    </div>
-    <div class="form-row">
-        <label for="node-config-input-name"><i class="fa fa-tag"></i> Name: </label>
-        <input type="text" id="node-config-input-name" />
-    </div>
-    <div class="form-tips"><b>Tip:</b> This is here to help.</div>
 </script>
 
 <script type="text/x-red" data-help-name="mongodb-config">

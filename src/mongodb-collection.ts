@@ -1,20 +1,11 @@
-import { CollectionCreateOptions, DbCollectionOptions } from 'mongodb';
 import { Node, NodeId, NodeProperties, Red } from 'node-red';
-import { open } from './connection';
-import { resolve } from './methods/collection';
+import { open } from './core';
 import { ConfigNode } from './mongodb-config';
-
-interface Collection {
-    name: string;
-    options?: DbCollectionOptions;
-    autoCreate?: boolean;
-    autoCreateOptions?: CollectionCreateOptions;
-}
 
 export interface CollectionNode extends Node {
     errorOutput: boolean;
     config: NodeId;
-    collection: Collection;
+    collection: string;
     method: string;
     prop: string;
 }
@@ -23,23 +14,8 @@ interface Properties extends NodeProperties {
     outputs: number;
     config: NodeId;
     collection: string;
-    options?: DbCollectionOptions;
-    autoCreate?: boolean;
-    autoCreateOptions?: CollectionCreateOptions;
     method: string;
     prop: string;
-}
-
-function deserialize(input: any): any {
-    if (!input) {
-        return undefined;
-    }
-
-    if (typeof input === 'object') {
-        return input;
-    }
-
-    return JSON.parse(input);
 }
 
 module.exports = function register(RED: Red): void {
@@ -51,12 +27,7 @@ module.exports = function register(RED: Red): void {
 
         this.errorOutput = props.outputs > 1;
         this.config = props.config;
-        this.collection = {
-            name: props.collection,
-            options: props.options,
-            autoCreate: props.autoCreate,
-            autoCreateOptions: props.autoCreateOptions,
-        };
+        this.collection = props.collection;
         this.method = props.method;
 
         const config = RED.nodes.getNode(this.config) as ConfigNode;
@@ -90,13 +61,8 @@ module.exports = function register(RED: Red): void {
                     throw new Error('Node is not configured');
                 }
 
-                const msgMongo = msg.mongodb || {};
-                const collectionName =
-                    msgMongo.collection || this.collection.name;
-                const collectionOpts = deserialize(
-                    msgMongo.options || this.collection.options,
-                );
-                const methodName = msgMongo.method || this.method;
+                const collectionName = msg.collection || this.collection;
+                const methodName = msg.method || this.method;
 
                 if (!methodName) {
                     throw new Error(
@@ -104,42 +70,11 @@ module.exports = function register(RED: Red): void {
                     );
                 }
 
-                const method = resolve(methodName);
-
-                if (!method) {
-                    throw new Error(
-                        `Invalid method name of "${collectionName}" collection: ${methodName}`,
-                    );
-                }
-
-                const db = await open(config.settings);
-                let collection = db.collection(collectionName, collectionOpts);
-
-                if (!collection) {
-                    const autoCreate =
-                        typeof msgMongo.autoCreate === 'boolean'
-                            ? msgMongo.autoCreate
-                            : this.collection.name;
-
-                    if (!autoCreate) {
-                        throw new Error(
-                            `Collection does not exist: ${collectionName}`,
-                        );
-                    }
-
-                    const autoCreateOptions =
-                        msgMongo.autoCreateOptions ||
-                        this.collection.autoCreateOptions;
-
-                    collection = await db.createCollection(
-                        collectionName,
-                        autoCreateOptions as CollectionCreateOptions,
-                    );
-                }
-
+                const conn = await open(config.settings);
+                const collection = conn.collection(collectionName);
                 const args = msg[this.prop || 'payload'];
 
-                msg.payload = await method(collection, args);
+                msg.payload = await collection.execute(methodName, args);
 
                 sendToOutputs(undefined, msg);
             } catch (e) {
