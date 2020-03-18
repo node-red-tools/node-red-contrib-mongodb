@@ -46,7 +46,7 @@ module.exports = function register(RED: Red): void {
                     if (this.errorOutput) {
                         msg.error = err;
 
-                        send([undefined, err]);
+                        send([undefined, msg]);
                     } else {
                         this.error(err, msg);
                     }
