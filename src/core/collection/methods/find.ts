@@ -7,7 +7,7 @@ export interface Arguments {
 }
 
 export const findSignature = Object.freeze({
-    input: ['query', 'update', 'options?'],
+    input: ['query', 'options?'],
 });
 
 export async function find(

@@ -6,7 +6,7 @@ export interface Arguments {
 }
 
 export const insertManySignature = Object.freeze({
-    input: ['docs', 'options'],
+    input: ['docs', 'options?'],
 });
 
 export async function insertMany(

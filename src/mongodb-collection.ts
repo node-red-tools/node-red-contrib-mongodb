@@ -39,7 +39,7 @@ module.exports = function register(RED: Red): void {
         const config = RED.nodes.getNode(this.config) as ConfigNode;
 
         this.on('input', async (msg: any, send: Function, done: Function) => {
-            const sendToOutputs = (err?: Error, msg?: any) => {
+            const sendToOutputs = (msg: any, err?: Error) => {
                 // if error occured
                 if (err) {
                     // if we need to send it to a dedicated output
@@ -48,8 +48,7 @@ module.exports = function register(RED: Red): void {
 
                         send([undefined, err]);
                     } else {
-                        // otherwise just throw it
-                        throw err;
+                        this.error(err, msg);
                     }
 
                     return;
@@ -93,10 +92,9 @@ module.exports = function register(RED: Red): void {
 
                 msg.payload = await collection.execute(methodName, args);
 
-                sendToOutputs(undefined, msg);
+                sendToOutputs(msg);
             } catch (e) {
-                this.error('Failed to handle a message', e);
-                sendToOutputs(e, msg);
+                sendToOutputs(msg, e);
             } finally {
                 done();
             }

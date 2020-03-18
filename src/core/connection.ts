@@ -10,7 +10,9 @@ export class Connection {
         uri: string,
         collections: CollectionSettings[],
     ): Promise<Connection> {
-        const client = await MongoClient.connect(uri);
+        const client = await MongoClient.connect(uri, {
+            useUnifiedTopology: true,
+        });
         const db = client.db();
         const c = await Promise.all(
             collections.map(i => Collection.open(db, i)),
