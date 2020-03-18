@@ -39,6 +39,15 @@
                     value: '',
                     required: true,
                 },
+                prop: {
+                    value: 'payload',
+                    required: true,
+                    validate: RED.validators.typedInput('propType'),
+                },
+                propType: {
+                    value: 'msg',
+                    required: true,
+                },
                 outputs: {
                     value: 1,
                     validate: isNumber,
@@ -56,6 +65,7 @@
                 const $config = $('#node-input-config');
                 const $collection = $('#node-input-collection');
                 const $method = $('#node-input-method');
+                const $prop = $('#node-input-prop');
                 const $outputs = $('#node-input-outputs');
                 const loadMethods = () => {
                     return toNativePomise(
@@ -136,6 +146,12 @@
                         console.error(err);
                     });
 
+                $prop.typedInput({
+                    default: 'msg',
+                    typeField: $('#node-input-propType'),
+                    types: ['flow', 'global', 'msg', 'json', 'jsonata'],
+                });
+
                 $outputs.spinner({
                     min: 1,
                     max: 2,
@@ -193,7 +209,8 @@
     </div>
     <div class="form-row">
         <label for="node-input-prop"><i class="fa fa-long-arrow-right"></i> <span>Query:</span></label>
-        <input type="text" id="node-input-prop" placeholder="msg.payload" />
+        <input type="text" id="node-input-prop"  />
+        <input type="hidden" id="node-input-propType" />
     </div>
     <div class="form-row">
         <label for="node-input-outputs"><i class="fa fa-random"></i> <span>Outputs:</span></label>

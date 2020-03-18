@@ -8,6 +8,7 @@ export interface CollectionNode extends Node {
     collection: string;
     method: string;
     prop: string;
+    propType: string;
 }
 
 interface Properties extends NodeProperties {
@@ -16,6 +17,7 @@ interface Properties extends NodeProperties {
     collection: string;
     method: string;
     prop: string;
+    propType: string;
 }
 
 module.exports = function register(RED: Red): void {
@@ -29,6 +31,8 @@ module.exports = function register(RED: Red): void {
         this.config = props.config;
         this.collection = props.collection;
         this.method = props.method;
+        this.prop = props.prop;
+        this.propType = props.propType;
 
         const config = RED.nodes.getNode(this.config) as ConfigNode;
 
@@ -72,7 +76,12 @@ module.exports = function register(RED: Red): void {
 
                 const conn = await open(config.settings);
                 const collection = conn.collection(collectionName);
-                const args = msg[this.prop || 'payload'];
+                const args = RED.util.evaluateNodeProperty(
+                    this.prop,
+                    this.propType,
+                    this,
+                    msg,
+                );
 
                 msg.payload = await collection.execute(methodName, args);
 
