@@ -53,13 +53,55 @@
                 return this.name || this.method || 'MongoDB Collection';
             },
             oneditprepare: function() {
+                const $config = $('#node-input-config');
                 const $collection = $('#node-input-collection');
                 const $method = $('#node-input-method');
                 const $outputs = $('#node-input-outputs');
-                const loadMethods = configId => {
+                const loadMethods = () => {
                     return toNativePomise(
                         $.getJSON('mongodb/collection/methods'),
                     );
+                };
+                const loadCollections = configId => {
+                    let result;
+
+                    RED.nodes.eachConfig(i => {
+                        if (result != null) {
+                            return false;
+                        }
+
+                        if (i.id === configId) {
+                            if (i.collections) {
+                                result = i.collections.map(i => i.name);
+                            }
+                        }
+                    });
+
+                    if (result != null) {
+                        return result;
+                    }
+
+                    return [];
+                };
+                const renderCollections = (collections = []) => {
+                    $collection.empty();
+
+                    const currentCollection = this.collection;
+
+                    $collection.append(
+                        `<option value="">-- Select collection --</option>`,
+                    );
+
+                    collections.forEach(collection => {
+                        const selected =
+                            collection === currentCollection ? 'selected' : '';
+
+                        $collection.append(
+                            `<option value="${collection}" ${
+                                selected ? 'selected' : ''
+                            }>${collection}</option>`,
+                        );
+                    });
                 };
                 const renderMethods = methods => {
                     $method.empty();
@@ -81,6 +123,8 @@
                         );
                     });
                 };
+
+                renderCollections(loadCollections($config.val()));
 
                 loadMethods()
                     .then(renderMethods)
@@ -108,6 +152,14 @@
                             $(this).spinner('value', value);
                         }
                     },
+                });
+
+                $config.change(evt => {
+                    if (evt.target.value !== this.config) {
+                        this.collection = '';
+                    }
+
+                    renderCollections(loadCollections(evt.target.value));
                 });
 
                 $outputs.change(evt => {
