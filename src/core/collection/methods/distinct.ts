@@ -6,6 +6,10 @@ export interface Arguments {
     options?: { readPreference?: ReadPreferenceOrMode; maxTimeMS?: number };
 }
 
+export const distinctSignature = Object.freeze({
+    input: ['key', 'query?', 'options?'],
+});
+
 export async function distinct(
     collection: Collection,
     args: Arguments,

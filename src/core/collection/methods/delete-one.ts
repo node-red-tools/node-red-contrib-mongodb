@@ -5,6 +5,10 @@ export interface Arguments {
     options?: CommonOptions & { bypassDocumentValidation?: boolean };
 }
 
+export const deleteOneSignature = Object.freeze({
+    input: ['query', 'options?'],
+});
+
 export async function deleteOne(
     collection: Collection,
     args: Arguments,

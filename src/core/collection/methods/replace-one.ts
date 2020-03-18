@@ -6,6 +6,10 @@ export interface Arguments {
     options?: ReplaceOneOptions;
 }
 
+export const replaceOneSignature = Object.freeze({
+    input: ['query', 'replacement', 'options?'],
+});
+
 export async function replaceOne(
     collection: Collection,
     args: Arguments,

@@ -4,6 +4,10 @@ export interface Arguments {
     spec: IndexSpecification[];
 }
 
+export const createIndexesSignature = Object.freeze({
+    input: ['spec'],
+});
+
 export async function createIndexes(
     collection: Collection,
     args: Arguments,

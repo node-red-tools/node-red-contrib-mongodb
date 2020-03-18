@@ -4,7 +4,7 @@ import {
     Db,
     DbCollectionOptions,
 } from 'mongodb';
-import { list, resolve } from './method';
+import { MethodDescription, list, resolve } from './method';
 
 export interface CollectionSettings {
     name: string;
@@ -45,7 +45,7 @@ export class Collection {
         return new Collection(instance);
     }
 
-    public static methods(): string[] {
+    public static methods(): MethodDescription[] {
         return list();
     }
 

@@ -6,6 +6,10 @@ export interface Arguments {
     options?: FindOneOptions;
 }
 
+export const findSignature = Object.freeze({
+    input: ['query', 'update', 'options?'],
+});
+
 export async function find(
     collection: Collection,
     args: Arguments,

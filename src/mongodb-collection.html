@@ -18,6 +18,14 @@
             });
         }
 
+        function normalizeArgName(argName = '') {
+            return argName.replace('?', '');
+        }
+
+        function isArgRequired(argName = '') {
+            return argName[argName.length - 1] === '?';
+        }
+
         RED.nodes.registerType('mongodb-collection', {
             category: 'database',
             defaults: {
@@ -39,13 +47,8 @@
                     value: '',
                     required: true,
                 },
-                prop: {
-                    value: 'payload',
-                    required: true,
-                    validate: RED.validators.typedInput('propType'),
-                },
-                propType: {
-                    value: 'msg',
+                methodSignature: {
+                    value: {},
                     required: true,
                 },
                 outputs: {
@@ -65,8 +68,10 @@
                 const $config = $('#node-input-config');
                 const $collection = $('#node-input-collection');
                 const $method = $('#node-input-method');
-                const $prop = $('#node-input-prop');
                 const $outputs = $('#node-input-outputs');
+                const $methodSignature = $(
+                    '#node-input-methodSignature-container',
+                );
                 const loadMethods = () => {
                     return toNativePomise(
                         $.getJSON('mongodb/collection/methods'),
@@ -123,14 +128,87 @@
                     );
 
                     $.each(methods, (_, method) => {
+                        const methodName = method.name;
+                        const signature = method.signature;
                         const selected =
-                            method === currentMethod ? 'selected' : '';
+                            methodName === currentMethod ? 'selected' : '';
 
-                        $method.append(
-                            `<option value="${method}" ${
-                                selected ? 'selected' : ''
-                            }>${method}</option>`,
-                        );
+                        const $option = $(`<option>${methodName}</option>`)
+                            .val(methodName)
+                            .prop('selected', selected)
+                            .data('signature', signature)
+                            .appendTo($method);
+                    });
+
+                    $method.change();
+                };
+                const renderMethodSignature = (signature = { input: [] }) => {
+                    $methodSignature.empty();
+
+                    signature.input.forEach((argName = '') => {
+                        const methodSignature = this.methodSignature || {};
+                        const normalizedName = normalizeArgName(argName);
+                        const current = methodSignature[normalizedName] || {
+                            type: 'msg',
+                            value: normalizedName,
+                        };
+
+                        const $opt = $('<li></li>').css({
+                            width: '100%',
+                            'margin-bottom': '10px',
+                        });
+                        // const $row = $('<div />')
+                        //     .css({
+                        //         width: '100%',
+                        //         'margin-bottom': '10px'
+                        //     })
+                        //     .appendTo($opt);
+                        // const $col1 = $('<div />')
+                        //     .css({
+                        //         width: '20%',
+                        //         display: 'inline-block',
+                        //     })
+                        //     .appendTo($row);
+                        // const $col2 = $('<div />')
+                        //     .css({
+                        //         width: '80%',
+                        //         display: 'inline-block',
+                        //     })
+                        //     .appendTo($row);
+
+                        const required = isArgRequired(argName);
+                        const $title = $('<label />', {
+                            class: 'node-input-methodSignature-arg-name',
+                        })
+                            .text(argName)
+                            .appendTo($opt);
+                        const $arg = $('<input/>', {
+                            class: 'node-input-methodSignature-arg-value',
+                            type: 'text',
+                            css: {
+                                width: '100%',
+                            },
+                            value: current.value,
+                        })
+                            .appendTo($opt)
+                            .typedInput({
+                                required: required,
+                                default: current.type,
+                                types: [
+                                    'msg',
+                                    'flow',
+                                    'global',
+                                    'str',
+                                    'num',
+                                    'bool',
+                                    'json',
+                                    'jsonata',
+                                    'date',
+                                    'env',
+                                ],
+                            });
+
+                        $opt.appendTo($methodSignature);
                     });
                 };
 
@@ -145,12 +223,6 @@
 
                         console.error(err);
                     });
-
-                $prop.typedInput({
-                    default: 'msg',
-                    typeField: $('#node-input-propType'),
-                    types: ['flow', 'global', 'msg', 'json', 'jsonata'],
-                });
 
                 $outputs.spinner({
                     min: 1,
@@ -185,6 +257,40 @@
                         this.outputLabels = ['result'];
                     }
                 });
+
+                $method.change(evt => {
+                    const $opt = $('option:selected', evt.target);
+                    const signature = $opt.data('signature');
+
+                    if (signature) {
+                        renderMethodSignature(signature);
+                    }
+                });
+            },
+            oneditsave: function() {
+                const $methodSignature = $(
+                    '#node-input-methodSignature-container',
+                );
+                this.methodSignature = {};
+
+                $methodSignature.children().each((i, el) => {
+                    const $arg = $(el);
+                    const $name = $arg.find(
+                        '.node-input-methodSignature-arg-name',
+                    );
+                    const $value = $arg.find(
+                        '.node-input-methodSignature-arg-value',
+                    );
+
+                    const name = normalizeArgName($name.text());
+                    const value = $value.typedInput('value');
+                    const type = $value.typedInput('type');
+
+                    this.methodSignature[name] = {
+                        value,
+                        type,
+                    };
+                });
             },
         });
     })();
@@ -208,13 +314,12 @@
         <select id="node-input-method" style="width: 70%;"></select>
     </div>
     <div class="form-row">
-        <label for="node-input-prop"><i class="fa fa-long-arrow-right"></i> <span>Query:</span></label>
-        <input type="text" id="node-input-prop"  />
-        <input type="hidden" id="node-input-propType" />
-    </div>
-    <div class="form-row">
         <label for="node-input-outputs"><i class="fa fa-random"></i> <span>Outputs:</span></label>
         <input id="node-input-outputs" style="width: 50px;" />
+    </div>
+    <div class="form-row">
+        <h4>Method arguments:</h4>
+        <ul id="node-input-methodSignature-container" style="list-style-type: none; margin: 0;"></ul>
     </div>
     <div class="form-tips"><b>Tip:</b> This is here to help.</div>
 </script>

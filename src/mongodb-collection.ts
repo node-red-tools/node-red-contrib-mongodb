@@ -2,13 +2,17 @@ import { Node, NodeId, NodeProperties, Red } from 'node-red';
 import { open } from './core';
 import { ConfigNode } from './mongodb-config';
 
+interface MethodArgument {
+    type: string;
+    value: string;
+}
+
 export interface CollectionNode extends Node {
     errorOutput: boolean;
     config: NodeId;
     collection: string;
     method: string;
-    prop: string;
-    propType: string;
+    methodSignature: { [argName: string]: MethodArgument };
 }
 
 interface Properties extends NodeProperties {
@@ -16,8 +20,7 @@ interface Properties extends NodeProperties {
     config: NodeId;
     collection: string;
     method: string;
-    prop: string;
-    propType: string;
+    methodSignature: { [argName: string]: MethodArgument };
 }
 
 module.exports = function register(RED: Red): void {
@@ -31,8 +34,7 @@ module.exports = function register(RED: Red): void {
         this.config = props.config;
         this.collection = props.collection;
         this.method = props.method;
-        this.prop = props.prop;
-        this.propType = props.propType;
+        this.methodSignature = props.methodSignature;
 
         const config = RED.nodes.getNode(this.config) as ConfigNode;
 
@@ -76,12 +78,18 @@ module.exports = function register(RED: Red): void {
 
                 const conn = await open(config.settings);
                 const collection = conn.collection(collectionName);
-                const args = RED.util.evaluateNodeProperty(
-                    this.prop,
-                    this.propType,
-                    this,
-                    msg,
-                );
+                const args: { [name: string]: any } = {};
+
+                Object.keys(this.methodSignature).forEach(argName => {
+                    const arg = this.methodSignature[argName];
+
+                    args[argName] = RED.util.evaluateNodeProperty(
+                        arg.value,
+                        arg.type,
+                        this,
+                        msg,
+                    );
+                });
 
                 msg.payload = await collection.execute(methodName, args);
 

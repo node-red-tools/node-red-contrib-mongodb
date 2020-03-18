@@ -1,13 +1,17 @@
 import { Collection, IndexOptions } from 'mongodb';
 
 export interface Arguments {
-    fieldOrSpec: any;
+    spec: any;
     options?: IndexOptions;
 }
+
+export const createIndexSignature = Object.freeze({
+    input: ['spec', 'options?'],
+});
 
 export async function createIndex(
     collection: Collection,
     args: Arguments,
 ): Promise<void> {
-    await collection.createIndex(args.fieldOrSpec, args.options);
+    await collection.createIndex(args.spec, args.options);
 }

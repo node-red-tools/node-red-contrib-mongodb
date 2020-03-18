@@ -5,6 +5,10 @@ export interface Arguments {
     options?: MongoCountPreferences;
 }
 
+export const countDocumentsSignature = Object.freeze({
+    input: ['query?', 'options?'],
+});
+
 export async function countDocuments(
     collection: Collection,
     args: Arguments,

@@ -5,6 +5,10 @@ export interface Arguments {
     options?: CollectionInsertManyOptions;
 }
 
+export const insertManySignature = Object.freeze({
+    input: ['docs', 'options'],
+});
+
 export async function insertMany(
     collection: Collection,
     args: Arguments,

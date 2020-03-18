@@ -5,6 +5,10 @@ export interface Arguments {
     options?: CommonOptions;
 }
 
+export const deleteManySignature = Object.freeze({
+    input: ['query', 'options?'],
+});
+
 export async function deleteMany(
     collection: Collection,
     args: Arguments,

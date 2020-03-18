@@ -11,6 +11,10 @@ export interface Arguments {
     options?: UpdateOneOptions;
 }
 
+export const updateOneSignature = Object.freeze({
+    input: ['query', 'update', 'options?'],
+});
+
 export async function updateOne(
     collection: Collection,
     args: Arguments,

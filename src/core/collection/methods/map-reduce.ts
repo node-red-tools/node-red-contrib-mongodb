@@ -12,6 +12,10 @@ export interface Arguments {
     options?: MapReduceOptions;
 }
 
+export const mapReduceSignature = Object.freeze({
+    input: ['map', 'reduce', 'options?'],
+});
+
 export async function mapReduce(
     collection: Collection,
     args: Arguments,

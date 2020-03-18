@@ -7,6 +7,10 @@ export interface Arguments {
     options?: FindOneOptions;
 }
 
+export const findOneAndReplaceSignature = Object.freeze({
+    input: ['query', 'replacement', 'options?'],
+});
+
 export async function findOneAndReplace(
     collection: Collection,
     args: Arguments,
