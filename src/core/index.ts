@@ -3,6 +3,7 @@ import { ConnectionSettings, toURI } from './settings';
 
 export * from './settings';
 export * from './connection';
+export * from './objectid';
 export * from './collection/index';
 
 const POOL = {} as {

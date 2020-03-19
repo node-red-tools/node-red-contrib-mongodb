@@ -1,0 +1,200 @@
+<script type="text/javascript">
+    (function() {
+        function isString(v) {
+            return typeof v === 'string';
+        }
+
+        function toNativePomise(jqPromise) {
+            return new Promise((resolve, reject) => {
+                jqPromise.then(resolve).catch(reject);
+            });
+        }
+
+        RED.nodes.registerType('mongodb-objectid', {
+            category: 'MongoDB',
+            defaults: {
+                name: {
+                    value: 'ObjectId',
+                    required: true,
+                    validate: isString,
+                },
+                method: {
+                    value: '',
+                    required: true,
+                    validate: isString,
+                },
+                paths: {
+                    value: [],
+                    required: true,
+                    validate: Array.isArray,
+                },
+            },
+            icon: 'mongodb.png',
+            inputs: 1,
+            outputs: 1,
+            color: '#13aa52',
+            paletteLabel: 'ObjectId',
+            label: function() {
+                return this.name || 'MongoDB ObjectId';
+            },
+            oneditprepare: function() {
+                let methods = {};
+                const $method = $('#node-input-method');
+                const $paths = $('#node-input-paths-container');
+                const loadMethods = () => {
+                    return toNativePomise(
+                        $.getJSON('mongodb/collection/methods'),
+                    );
+                };
+
+                const renderMethods = methods => {
+                    $method.empty();
+
+                    const currentMethod = this.method;
+
+                    $method.append(
+                        `<option value="">-- Select method --</option>`,
+                    );
+
+                    $.each(methods, (_, method) => {
+                        const methodName = method.name;
+                        const signature = method.signature;
+                        const selected =
+                            methodName === currentMethod ? 'selected' : '';
+
+                        const $option = $(`<option>${methodName}</option>`)
+                            .val(methodName)
+                            .prop('selected', selected)
+                            .data('signature', signature)
+                            .appendTo($method);
+                    });
+
+                    $method.change();
+                };
+
+                $paths
+                    .css('min-height', '150px')
+                    .css('min-width', '450px')
+                    .editableList({
+                        addItem: function($container, i, opt) {
+                            const currentMethodName = $method.val();
+                            const currentMethod = methods[currentMethodName];
+
+                            if (!currentMethod) {
+                                $container.parent().remove();
+                                return;
+                            }
+
+                            const args = [];
+                            const types = [];
+
+                            (currentMethod.signature.input || []).forEach(i => {
+                                const name = i.replace('?', '');
+
+                                args.push(name);
+                                types.push({
+                                    value: name,
+                                    label: `${name}.`,
+                                });
+                            });
+
+                            let path = opt;
+
+                            if (!path.arg) {
+                                path = {
+                                    type: args[0],
+                                    value: '_id',
+                                };
+                            }
+
+                            $container.css({
+                                overflow: 'hidden',
+                                whiteSpace: 'nowrap',
+                            });
+
+                            const $path = $('<input/>', {
+                                class: 'node-input-path',
+                                type: 'text',
+                                css: {
+                                    width: '100%',
+                                },
+                            })
+                                .appendTo($container)
+                                .typedInput({
+                                    required: false,
+                                    default: path.type || args[0],
+                                    types: types,
+                                });
+
+                            $path.typedInput('value', path.value);
+                        },
+                        removable: true,
+                        sortable: false,
+                    });
+
+                $method.change(evt => {
+                    console.log(evt.target.value);
+                    $paths.empty();
+                });
+
+                loadMethods().then((m = []) => {
+                    methods = m.reduce((res, i) => {
+                        const out = res;
+
+                        out[i.name] = i;
+
+                        return out;
+                    }, {});
+
+                    renderMethods(m);
+
+                    (this.paths || []).forEach(i => {
+                        $paths.editableList('addItem', i);
+                    });
+                });
+            },
+            oneditsave: function() {
+                const $paths = $('#node-input-paths-container').editableList(
+                    'items',
+                );
+                this.paths = [];
+
+                $paths.each((i, el) => {
+                    const $path = $(el);
+                    const $input = $path.find('.node-input-path');
+
+                    this.paths.push({
+                        type: $input.typedInput('type'),
+                        value: $input.typedInput('value'),
+                    });
+                });
+            },
+        });
+    })();
+</script>
+
+<script type="text/x-red" data-template-name="mongodb-objectid">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name: </label>
+        <input type="text" id="node-input-name" />
+    </div>
+    <div class="form-row">
+        <label for="node-input-method"><i class="fa fa-tasks"></i> <span>Method:</span></label>
+        <select id="node-input-method" style="width: 70%;"></select>
+    </div>
+    <div class="form-row node-input-paths-row">
+        <ol id="node-input-paths-container"></ol>
+    </div>
+    <div class="form-tips"><b>Tip:</b> This is here to help.</div>
+</script>
+
+<script type="text/x-red" data-help-name="mongodb-objectid">
+    <p>Some useful help text to introduce the node.</p>
+    <h3>Outputs</h3>
+        <dl class="message-properties">
+        <dt>payload
+            <span class="property-type">string | buffer</span>
+        </dt>
+    <h3>Details</h3>
+    <p>Some more information about the node.</p>
+</script>

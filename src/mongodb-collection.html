@@ -27,10 +27,10 @@
         }
 
         RED.nodes.registerType('mongodb-collection', {
-            category: 'database',
+            category: 'MongoDB',
             defaults: {
                 name: {
-                    value: 'MongoDB',
+                    value: 'Collection',
                     required: true,
                     validate: isString,
                 },
@@ -61,6 +61,7 @@
             outputs: 1,
             outputLabels: ['result'],
             color: '#13aa52',
+            paletteLabel: 'Collection',
             label: function() {
                 return this.name || this.method || 'MongoDB Collection';
             },

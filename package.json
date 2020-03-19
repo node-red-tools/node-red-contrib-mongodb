@@ -28,6 +28,8 @@
     "homepage": "https://github.com/node-red-tools/node-red-contrib-mongodb#readme",
     "devDependencies": {
         "@types/express": "^4.17.3",
+        "@types/lodash.get": "^4.4.6",
+        "@types/lodash.set": "^4.3.6",
         "@types/mongodb": "^3.5.2",
         "@types/node": "^13.9.1",
         "@types/node-red": "^0.20.1",
@@ -44,12 +46,15 @@
         "typescript": "^3.8.3"
     },
     "dependencies": {
+        "lodash.get": "^4.4.2",
+        "lodash.set": "^4.3.2",
         "mongodb": "^3.5.5"
     },
     "node-red": {
         "nodes": {
             "mongodb-collection": "lib/mongodb-collection.js",
-            "mongodb-config": "lib/mongodb-config.js"
+            "mongodb-config": "lib/mongodb-config.js",
+            "mongodb-objectid": "lib/mongodb-objectid.js"
         }
     }
 }

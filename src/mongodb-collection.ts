@@ -1,5 +1,6 @@
 import { Node, NodeId, NodeProperties, Red } from 'node-red';
-import { open } from './core';
+import { open, toObjectId } from './core';
+import { getObjectIdFields } from './internals';
 import { ConfigNode } from './mongodb-config';
 
 interface MethodArgument {
@@ -79,6 +80,7 @@ module.exports = function register(RED: Red): void {
                 const collection = conn.collection(collectionName);
                 const args: { [name: string]: any } = {};
 
+                // Resolve argument fields from the msg object
                 Object.keys(this.methodSignature).forEach(argName => {
                     const arg = this.methodSignature[argName];
 
@@ -89,6 +91,13 @@ module.exports = function register(RED: Red): void {
                         msg,
                     );
                 });
+
+                const objectIdFields = getObjectIdFields(msg);
+
+                // Convert string fields to MongoDB ObjectId fields
+                if (objectIdFields.length > 0) {
+                    toObjectId(args, objectIdFields);
+                }
 
                 msg.payload = await collection.execute(methodName, args);
 
