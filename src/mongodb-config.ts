@@ -4,6 +4,10 @@ import { Collection, ConnectionSettings, close } from './core';
 
 export interface ConfigNode extends Node {
     settings: ConnectionSettings;
+    credentials: {
+        username?: string;
+        password?: string;
+    };
 }
 
 type CollectionConfigOptionType =
@@ -26,8 +30,6 @@ interface Properties extends NodeProperties {
     host: string;
     port?: number;
     database: string;
-    username?: string;
-    password?: string;
     options?: string;
     collections: CollectionConfig[];
 }
@@ -42,8 +44,8 @@ module.exports = function register(RED: Red): void {
                 host: props.host,
                 port: props.port,
                 database: props.database,
-                username: props.username,
-                password: props.password,
+                username: this.credentials.username,
+                password: this.credentials.password,
                 collections: (props.collections || []).map(config => {
                     return {
                         name: config.name,
