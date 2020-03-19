@@ -100,7 +100,7 @@
 
                             let path = opt;
 
-                            if (!path.arg) {
+                            if (!path.type || !path.value) {
                                 path = {
                                     type: args[0],
                                     value: '_id',
@@ -133,7 +133,6 @@
                     });
 
                 $method.change(evt => {
-                    console.log(evt.target.value);
                     $paths.empty();
                 });
 
