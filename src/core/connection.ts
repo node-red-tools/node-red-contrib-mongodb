@@ -1,4 +1,9 @@
-import { Db, MongoClient, MongoClientOptions } from 'mongodb';
+import {
+    Collection as DbCollection,
+    Db,
+    MongoClient,
+    MongoClientOptions,
+} from 'mongodb';
 import { Collection, CollectionSettings } from './collection';
 
 export class Connection {
@@ -21,8 +26,36 @@ export class Connection {
             ),
         );
         const db = client.db();
+        const existingCollections = await db.collections();
+        const hashMap = existingCollections.reduce(
+            (res: any, c: DbCollection) => {
+                const out = res;
+
+                out[c.collectionName] = c;
+
+                return res;
+            },
+            {},
+        );
+
         const c = await Promise.all(
-            collections.map(i => Collection.open(db, i)),
+            collections.map(i => {
+                const existing = hashMap[i.name];
+
+                if (existing) {
+                    return new Collection(existing);
+                }
+
+                if (!i.autoCreate) {
+                    return Promise.reject(
+                        new Error(
+                            `Collection "${i.name}" does not exists in "${db.databaseName}" database`,
+                        ),
+                    );
+                }
+
+                return Collection.create(db, i);
+            }),
         );
 
         return new Connection(client, db, c);

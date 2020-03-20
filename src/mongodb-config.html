@@ -78,6 +78,9 @@
                 const $collections = $(
                     '#node-config-mongodb-collections-container',
                 );
+
+                const rows = [{}];
+
                 $collections
                     .css('min-height', '150px')
                     .css('min-width', '450px')
@@ -93,6 +96,8 @@
                                     autoCreate: false,
                                     autoCreateOptionsType: 'json',
                                     autoCreateOptions: '{}',
+                                    autoCreateIndexesType: 'json',
+                                    autoCreateIndexes: '[]',
                                 };
                             }
 
@@ -143,6 +148,16 @@
                             const $row2Col3 = $('<td></td>', {
                                 css: col3Css2,
                             }).appendTo($row2);
+                            const $row3 = $('<tr></tr>').appendTo($body);
+                            const $row3Col1 = $('<td></td>', {
+                                css: col1Css,
+                            }).appendTo($row3);
+                            const $row3Col2 = $('<td></td>', {
+                                css: col2Css,
+                            }).appendTo($row3);
+                            const $row3Col3 = $('<td></td>', {
+                                css: col3Css2,
+                            }).appendTo($row3);
 
                             const $collectionName = $('<input/>', {
                                 class: 'node-input-collection-property-name',
@@ -220,7 +235,35 @@
                                     ],
                                 });
 
-                            $table.appendTo($container);
+                            $('<span></span>')
+                                .css(optionsCss)
+                                .appendTo($row3Col1);
+
+                            $('<span>Indexes:</span>')
+                                .css(optionsCss)
+                                .appendTo($row3Col2);
+
+                            const $collectionAutoCreateIndexes = $('<input/>', {
+                                class:
+                                    'node-input-collection-property-autoCreateIndexes',
+                                type: 'text',
+                                css: {
+                                    width: '100%',
+                                },
+                            })
+                                .appendTo($row3Col3)
+                                .typedInput({
+                                    default:
+                                        collection.autoCreateIndexesType ||
+                                        'json',
+                                    types: [
+                                        'flow',
+                                        'global',
+                                        'json',
+                                        'jsonata',
+                                        'env',
+                                    ],
+                                });
 
                             $collectionName.val(collection.name);
                             $collectionAutoCreate.attr(
@@ -235,6 +278,10 @@
                                 'value',
                                 collection.autoCreateOptions,
                             );
+                            $collectionAutoCreateIndexes.typedInput(
+                                'value',
+                                collection.autoCreateIndexes,
+                            );
 
                             $collectionAutoCreate.change(evt => {
                                 $collectionAutoCreateOptions.prop(
@@ -242,6 +289,8 @@
                                     !evt.target.checked,
                                 );
                             });
+
+                            $table.appendTo($container);
                         },
                         removable: true,
                         sortable: false,
@@ -276,6 +325,9 @@
                     const $autoCreateOptions = $collection.find(
                         '.node-input-collection-property-autoCreateOptions',
                     );
+                    const $collectionAutoCreateIndexes = $collection.find(
+                        '.node-input-collection-property-autoCreateIndexes',
+                    );
 
                     this.collections.push({
                         name: $collection
@@ -294,6 +346,12 @@
                         autoCreateOptions: $autoCreateOptions.typedInput(
                             'value',
                         ),
+                        autoCreateIndexesType:
+                            $collectionAutoCreateIndexes.typedInput('type') ||
+                            'json',
+                        autoCreateIndexes:
+                            $collectionAutoCreateIndexes.typedInput('value') ||
+                            '[]',
                     });
                 });
             },

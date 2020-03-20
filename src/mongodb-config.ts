@@ -1,6 +1,11 @@
 import { Request, Response } from 'express';
 import { Node, NodeProperties, Red } from 'node-red';
-import { Collection, ConnectionSettings, close } from './core';
+import {
+    Collection,
+    CollectionSettings,
+    ConnectionSettings,
+    close,
+} from './core';
 
 export interface ConfigNode extends Node {
     settings: ConnectionSettings;
@@ -24,6 +29,8 @@ interface CollectionConfig {
     autoCreate: boolean;
     autoCreateOptionsType: CollectionConfigOptionType;
     autoCreateOptions: string;
+    autoCreateIndexesType: CollectionConfigOptionType;
+    autoCreateIndexes: string;
 }
 
 interface Properties extends NodeProperties {
@@ -47,28 +54,43 @@ module.exports = function register(RED: Red): void {
                 username: this.credentials.username,
                 password: this.credentials.password,
                 collections: (props.collections || []).map(config => {
+                    const deserizliedIndexes = RED.util.evaluateNodeProperty(
+                        config.autoCreateIndexes,
+                        config.autoCreateIndexesType,
+                        this,
+                        {},
+                    );
+
+                    let indexes;
+
+                    if (Array.isArray(deserizliedIndexes)) {
+                        indexes = deserizliedIndexes;
+                    } else if (typeof deserizliedIndexes === 'object') {
+                        indexes = [deserizliedIndexes];
+                    }
+
                     return {
                         name: config.name,
-                        autoCreate: config.autoCreate,
                         options: RED.util.evaluateNodeProperty(
                             config.options,
                             config.optionsType,
                             this,
                             {},
                         ),
+                        autoCreate: config.autoCreate,
                         autoCreateOptions: RED.util.evaluateNodeProperty(
                             config.autoCreateOptions,
                             config.autoCreateOptionsType,
                             this,
                             {},
                         ),
-                    };
+                        autoCreateIndexes: indexes,
+                    } as CollectionSettings;
                 }),
-                options: RED.util.evaluateJSONataExpression(
-                    RED.util.prepareJSONataExpression(
-                        props.options || '{}',
-                        this,
-                    ),
+                options: RED.util.evaluateNodeProperty(
+                    props.options || '{}',
+                    'json',
+                    this,
                     {},
                 ),
             });
