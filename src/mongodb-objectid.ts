@@ -17,7 +17,7 @@ interface Properties extends NodeProperties {
 }
 
 module.exports = function register(RED: Red): void {
-    RED.nodes.registerType('mongodb-objectid', function mongodbCollection(
+    RED.nodes.registerType('mongodb-objectid', function mongodbObjectId(
         this: ObjectIdNode,
         props: Properties,
     ): void {

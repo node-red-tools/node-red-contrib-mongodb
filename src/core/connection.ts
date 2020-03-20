@@ -40,6 +40,12 @@ export class Connection {
         }, {});
     }
 
+    public isConnected(): boolean {
+        this.__assertIsOpen();
+
+        return this.__client.isConnected();
+    }
+
     public db(): Db {
         this.__assertIsOpen();
 

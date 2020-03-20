@@ -1,0 +1,82 @@
+<script type="text/javascript">
+    (function() {
+        function isString(v) {
+            return typeof v === 'string';
+        }
+
+        function toNativePomise(jqPromise) {
+            return new Promise((resolve, reject) => {
+                jqPromise.then(resolve).catch(reject);
+            });
+        }
+
+        RED.nodes.registerType('mongodb-ping', {
+            category: 'MongoDB',
+            defaults: {
+                name: {
+                    value: 'Ping',
+                    required: true,
+                    validate: isString,
+                },
+                config: {
+                    value: '',
+                    required: true,
+                    type: 'mongodb-config',
+                },
+                property: {
+                    value: 'error',
+                    required: true,
+                },
+                propertyType: {
+                    value: 'msg',
+                    required: true,
+                },
+            },
+            icon: 'mongodb.png',
+            inputs: 1,
+            outputs: 1,
+            color: '#13aa52',
+            paletteLabel: 'Ping',
+            label: function() {
+                return this.name || 'MongoDB Ping';
+            },
+            oneditprepare: function() {
+                const $property = $('#node-input-property');
+                $property.typedInput({
+                    required: true,
+                    default: this.propertyType,
+                    types: ['msg', 'flow', 'global'],
+                });
+
+                $property.typedInput('value', this.property);
+            },
+        });
+    })();
+</script>
+
+<script type="text/x-red" data-template-name="mongodb-ping">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name: </label>
+        <input type="text" id="node-input-name" />
+    </div>
+    <div class="form-row">
+        <label for="node-input-config"><i class="fa fa-tasks"></i> <span>Connection:</span></label>
+        <select id="node-input-config"></select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-property"><i class="fa fa-tasks"></i> <span>Result:</span></label>
+        <input id="node-input-property" style="width: 70%;"></select>
+    </div>
+    <div class="form-tips"><b>Tip:</b> This is here to help.</div>
+</script>
+
+<script type="text/x-red" data-help-name="mongodb-ping">
+    <p>Some useful help text to introduce the node.</p>
+    <h3>Outputs</h3>
+        <dl class="message-properties">
+        <dt>payload
+            <span class="property-type">string | buffer</span>
+        </dt>
+    <h3>Details</h3>
+    <p>Some more information about the node.</p>
+</script>
