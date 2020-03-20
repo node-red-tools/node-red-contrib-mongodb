@@ -38,5 +38,9 @@ export function toURI(settings: ConnectionSettings): string {
         fullUrl = `${fullUrl}:${settings.port}`;
     }
 
+    if (settings.database) {
+        fullUrl = `${fullUrl}/${settings.database}`;
+    }
+
     return `${SCHEMA}${fullUrl}`;
 }
