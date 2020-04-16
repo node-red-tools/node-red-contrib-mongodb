@@ -1,7 +1,10 @@
 import { MongoClientOptions } from 'mongodb';
 import { CollectionSettings } from './collection';
 
-const SCHEMA = 'mongodb://';
+const SCHEMAS = [
+    'mongodb://',
+    'mongodb+srv://'
+];
 
 export interface ConnectionSettings {
     host: string;
@@ -13,25 +16,28 @@ export interface ConnectionSettings {
     collections: CollectionSettings[];
 }
 
-function normalizeHost(host: string): string {
+function normalizeHost(host: string): { schema: string, url: string } {
     let normalized = host;
 
-    if (host.startsWith(SCHEMA)) {
-        normalized = host.substr(SCHEMA.length);
+    const schema = SCHEMAS.find(i => host.startsWith(i));
+
+    if (schema) {
+        normalized = host.substr(schema.length);
     }
 
     if (host.endsWith('/')) {
         normalized = host.substring(0, host.length - 1);
     }
 
-    return normalized;
+    return { url: normalized, schema: schema || SCHEMAS[0] };
 }
 
 export function toURI(settings: ConnectionSettings): string {
-    let fullUrl = normalizeHost(settings.host);
+    const host = normalizeHost(settings.host);
+    let fullUrl = host.url;
 
     if (settings.username && settings.password) {
-        fullUrl = `${settings.username}:${settings.password}@${fullUrl}`;
+        fullUrl = `${settings.username}:${settings.password}@${host.url}`;
     }
 
     if (settings.port) {
@@ -42,5 +48,5 @@ export function toURI(settings: ConnectionSettings): string {
         fullUrl = `${fullUrl}/${settings.database}`;
     }
 
-    return `${SCHEMA}${fullUrl}`;
+    return `${host.schema}${fullUrl}`;
 }
