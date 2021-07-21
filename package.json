@@ -47,7 +47,7 @@
     "dependencies": {
         "lodash.get": "^4.4.2",
         "lodash.set": "^4.3.2",
-        "mongodb": "^3.5.6"
+        "mongodb": "^4.0.1"
     },
     "node-red": {
         "nodes": {
