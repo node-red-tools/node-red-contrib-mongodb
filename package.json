@@ -30,7 +30,7 @@
         "@types/lodash.get": "^4.4.6",
         "@types/lodash.set": "^4.3.6",
         "@types/mongodb": "^3.5.8",
-        "@types/node": "^13.13.1",
+        "@types/node": "^16.4.7",
         "@types/node-red": "^0.20.1",
         "cpy-cli": "^3.1.0",
         "cross-env": "^7.0.2",
